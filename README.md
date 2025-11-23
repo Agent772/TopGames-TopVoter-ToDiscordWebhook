@@ -1,16 +1,33 @@
 # TopGames TopVoter Discord Webhook
 
-A Python application that fetches top voter rankings from the TopGames API and posts them to Discord via webhook. The application validates and sorts the ranking data, builds a formatted Discord embed, and sends it automatically via cron.
+A comprehensive Python application that fetches top voter rankings from the TopGames API and posts them to Discord via webhook. Features advanced scheduling, weekly analysis, name consolidation, and automated month-end highlights.
 
-## Features
+## ✨ Features
 
+### 📊 **Core Functionality**
 - 🔄 Fetches player voting data from TopGames API
-- ✅ Validates and sorts ranking data
-- 🎨 Creates beautiful Discord embeds with medal emojis for top 3
-- 🤖 Sends rankings to Discord via webhook
-- ⏰ Designed to run via cron for automated updates
-- 🔧 Fully configurable via environment variables
-- 📝 Comprehensive logging
+- ✅ Validates and sorts ranking data with smart name consolidation
+- 🎨 Creates beautiful Discord embeds with medal emojis
+- 🤖 Automated Discord webhook integration
+- 📝 Comprehensive logging and error handling
+
+### 🗓️ **Advanced Scheduling**
+- ⏰ **Daily Posts**: Regular rankings at 23:55 (customizable)
+- 📅 **Weekly Analysis**: Sunday posts with voting activity insights
+- 🏆 **Month-End Highlights**: Gold-highlighted final rankings
+- 💾 **Snapshot System**: Automatic weekly vote tracking
+
+### 🎮 **Smart Player Management**
+- 🔗 **Name Consolidation**: Automatically merges votes from multiple devices
+- 📱 **Multi-Device Support**: Handles `Player~1`, `Player~mobile`, etc.
+- 🎯 **Accurate Rankings**: No split votes for same player across devices
+
+### 🎨 **Visual Enhancements**
+- 🏅 Medal emojis (🥇🥈🥉) for monthly top 3
+- 🔥 Special emojis (🔥⚡🌟) for weekly top performers  
+- 🌍 German month names in titles
+- 🎨 Color-coded embeds: Blue (daily), Purple (weekly), Gold (month-end)
+- 📋 Clean 2-column layout for easy reading
 
 ## Requirements
 
@@ -43,94 +60,144 @@ A Python application that fetches top voter rankings from the TopGames API and p
    - `EMBED_DESCRIPTION`: (Optional) Description for the embed
    - `MAX_VOTERS`: (Optional) Maximum number of voters to display
 
-## Usage
+## 🎮 Smart Name Consolidation
 
-### Running Manually
+The bot automatically handles players voting from multiple devices by consolidating names with `~` suffixes:
 
-Run the script directly:
-```bash
-python3 main.py
+### How It Works
+When players vote from different devices, TopGames API may return separate entries like:
+```json
+{
+  "players": [
+    {"playername": "Player1", "votes": 15},
+    {"playername": "Player1~mobile", "votes": 8},
+    {"playername": "Player1~tablet", "votes": 5},
+    {"playername": "Betty", "votes": 20},
+    {"playername": "Betty~phone", "votes": 12}
+  ]
+}
 ```
 
-Or make it executable and run:
-```bash
-chmod +x main.py
-./main.py
+### Automatic Consolidation
+The bot **automatically combines** these into single entries:
+```
+Player1: 28 votes (15 + 8 + 5)
+Betty: 32 votes (20 + 12)
 ```
 
-### Running via Cron
+### Supported Naming Patterns
+- `PlayerName~1`, `PlayerName~2`, etc.
+- `PlayerName~mobile`, `PlayerName~phone`
+- `PlayerName~anything` → All become `PlayerName`
 
-To automatically post rankings at regular intervals, set up a cron job:
+### Logging
+Consolidations are logged for transparency:
+```
+INFO - Consolidated 'Player1': ['Player1~mobile', 'Player1~tablet'] -> 28 total votes
+```
 
-1. **Edit your crontab:**
-   ```bash
-   crontab -e
-   ```
+## 🚀 Usage
 
-2. **Add a cron job entry:**
+### 🧪 Testing & Manual Runs
 
-   **Example 1: Run every hour**
-   ```cron
-   0 * * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
-   ```
+**Test name consolidation:**
+```bash
+python test_consolidation.py
+```
 
-   **Example 2: Run every day at 9:00 AM**
-   ```cron
-   0 9 * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
-   ```
+**Test scheduling behavior:**
+```bash
+python test_scheduling.py
+```
 
-   **Example 3: Run every 6 hours**
-   ```cron
-   0 */6 * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
-   ```
+**Test month-end highlighting:**
+```bash
+python test_highlight.py
+```
 
-   **Example 4: Run twice a day (8 AM and 8 PM)**
-   ```cron
-   0 8,20 * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
-   ```
+**Run manually (current date logic):**
+```bash
+python main.py
+```
 
-   **Cron schedule format:**
-   ```
-   * * * * * command
-   │ │ │ │ │
-   │ │ │ │ └─── Day of week (0-7, Sunday = 0 or 7)
-   │ │ │ └───── Month (1-12)
-   │ │ └─────── Day of month (1-31)
-   │ └───────── Hour (0-23)
-   └─────────── Minute (0-59)
-   ```
+### ⏰ Automated Scheduling
 
-3. **Verify the cron job:**
-   ```bash
-   crontab -l
-   ```
+The bot is designed to run **daily at 23:55** and automatically determines what type of post to make:
 
-4. **Check logs:**
-   ```bash
-   tail -f /var/log/topvoters.log
-   ```
+#### 📅 **Post Schedule**
+| Day Type | Posts | Features |
+|----------|--------|----------|
+| **Regular Days** | Daily ranking | 🔵 Blue embed, standard title |
+| **Sundays** | Daily + Weekly analysis | 🔵 Daily + 🟣 Weekly insights |
+| **Month-End** | Final ranking | 🟡 **Gold highlight** + 🏆 **FINAL RANKING** |
+| **Last Sunday** | Final + Weekly | 🟡 Gold final + 🟣 Weekly analysis |
 
-## Project Structure
+#### 🖥️ **Windows Task Scheduler Setup (Recommended)**
+
+1. **Open Task Scheduler** (`taskschd.msc`)
+2. **Create Basic Task**
+3. **Configure:**
+   - **Name:** `TopGames TopVoter Bot`
+   - **Trigger:** Daily at `23:55`
+   - **Action:** Start a program
+   - **Program:** `D:\Git\TopGames-TopVoter-ToDiscordWebhook\.venv\Scripts\python.exe`
+   - **Arguments:** `main.py`
+   - **Start in:** `D:\Git\TopGames-TopVoter-ToDiscordWebhook\`
+
+#### ⚡ **PowerShell Setup Command**
+```powershell
+# Run as Administrator
+$action = New-ScheduledTaskAction -Execute "D:\Git\TopGames-TopVoter-ToDiscordWebhook\.venv\Scripts\python.exe" -Argument "main.py" -WorkingDirectory "D:\Git\TopGames-TopVoter-ToDiscordWebhook"
+$trigger = New-ScheduledTaskTrigger -Daily -At "23:55"
+$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+Register-ScheduledTask -TaskName "TopGames TopVoter Bot" -Action $action -Trigger $trigger -Settings $settings -Description "Daily TopGames voter rankings with weekly analysis"
+```
+
+#### 🐧 **Linux/Unix Cron Setup**
+```bash
+# Edit crontab
+crontab -e
+
+# Add daily job at 23:55
+55 23 * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && python3 main.py >> /var/log/topvoters.log 2>&1
+```
+
+## 📁 Project Structure
 
 ```
 TopGames-TopVoter-ToDiscordWebhook/
-├── main.py              # Main entry point
-├── config.py            # Configuration management
-├── api_client.py        # API client for fetching data
-├── ranking.py           # Ranking validation and sorting logic
-├── webhook.py           # Discord webhook sender
-├── requirements.txt     # Python dependencies
-├── .env.example         # Example environment variables
-├── .env                 # Your actual environment variables (not committed)
-├── .gitignore          # Git ignore rules
-├── LICENSE             # Project license
-└── README.md           # This file
+├── 🚀 Core Files
+│   ├── main.py                 # Main orchestrator with scheduling logic
+│   ├── config.py               # Configuration management
+│   ├── api_client.py           # TopGames API integration
+│   ├── ranking.py              # Smart ranking with name consolidation
+│   └── webhook.py              # Discord webhook with multi-format embeds
+├── 🧠 Advanced Features
+│   ├── schedule_manager.py     # Intelligent post scheduling
+│   ├── snapshot_manager.py     # Weekly vote tracking system
+│   └── snapshots/              # Weekly voting data storage
+├── 🧪 Testing & Tools
+│   ├── test_consolidation.py   # Test name merging functionality
+│   ├── test_scheduling.py      # Test different date scenarios
+│   ├── test_highlight.py       # Test month-end highlighting
+│   └── cron_setup.txt         # Automation setup instructions
+├── ⚙️ Configuration
+│   ├── .env                    # Your environment variables
+│   ├── .env.example           # Configuration template
+│   ├── requirements.txt       # Python dependencies
+│   └── cron.example           # Cron job examples
+├── 📚 Documentation
+│   ├── README.md              # This comprehensive guide
+│   ├── ENHANCED_FEATURES.md   # Feature summary
+│   └── LICENSE               # Project license
+└── 🔧 Development
+    ├── .gitignore             # Git ignore rules
+    └── __pycache__/           # Python cache files
 ```
 
-## API Response Format
+## 📊 API Response Format & Processing
 
-The application expects the TopGames API to return JSON in this format:
-
+### Expected TopGames API Response
 ```json
 {
   "code": 200,
@@ -141,12 +208,49 @@ The application expects the TopGames API to return JSON in this format:
       "playername": "Borsti1"
     },
     {
+      "votes": 25,
+      "playername": "Player~mobile"
+    },
+    {
+      "votes": 15, 
+      "playername": "Player~tablet"
+    },
+    {
       "votes": 34,
       "playername": "Betty"
     }
   ]
 }
 ```
+
+### After Smart Processing
+The bot automatically consolidates and processes this into:
+```json
+[
+  {
+    "rank": 1,
+    "playername": "Borsti1", 
+    "votes": 47
+  },
+  {
+    "rank": 2,
+    "playername": "Player",
+    "votes": 40
+  },
+  {
+    "rank": 3,
+    "playername": "Betty",
+    "votes": 34
+  }
+]
+```
+
+### Processing Features
+- ✅ **Name Consolidation**: `Player~mobile` + `Player~tablet` → `Player`
+- ✅ **Vote Aggregation**: Combines votes from all device variants
+- ✅ **Data Validation**: Filters invalid entries
+- ✅ **Smart Sorting**: Ranks by consolidated vote totals
+- ✅ **Logging**: Transparent consolidation reporting
 
 ## Creating a Discord Webhook
 
@@ -160,64 +264,218 @@ The application expects the TopGames API to return JSON in this format:
 5. Click "Copy Webhook URL"
 6. Paste the URL into your `.env` file as `DISCORD_WEBHOOK_URL`
 
-## Configuration Options
+## ⚙️ Configuration Options
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `API_URL` | Yes | - | TopGames API endpoint URL |
-| `DISCORD_WEBHOOK_URL` | Yes | - | Discord webhook URL |
-| `EMBED_COLOR` | No | 3447003 | Embed color (decimal format) |
-| `EMBED_TITLE` | No | "Top Voters" | Embed title |
-| `EMBED_DESCRIPTION` | No | "Here are the top voters!" | Embed description |
-| `MAX_VOTERS` | No | 10 | Maximum number of voters to display |
+| `API_URL` | ✅ Yes | - | TopGames API endpoint URL |
+| `DISCORD_WEBHOOK_URL` | ✅ Yes | - | Discord webhook URL |
+| `EMBED_COLOR` | No | `3447003` | Default embed color (blue) |
+| `EMBED_TITLE` | No | `"Top Voters"` | Base embed title (month added automatically) |
+| `EMBED_DESCRIPTION` | No | `"Here are the top voters!"` | Embed description text |
+| `MAX_VOTERS` | No | `10` | Maximum number of voters to display |
 
-## Troubleshooting
+### 🎨 Color Codes
+- **3447003** - Discord Blue (default/daily)
+- **7506394** - Purple (weekly analysis) 
+- **16766720** - Gold (month-end finals)
 
-### "Configuration error: API_URL is not set"
-Make sure you've created a `.env` file from `.env.example` and filled in all required values.
+### 📝 Example Configuration
+```env
+API_URL=https://api.top-games.net/v1/servers/YOUR_SERVER_ID/players-ranking
+DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_TOKEN
+EMBED_TITLE=Top Voters
+EMBED_DESCRIPTION=Hier das Update der Top Voter dieses Monats!
+MAX_VOTERS=15
+EMBED_COLOR=3447003
+```
 
-### "Failed to fetch data from API"
-- Check that your `API_URL` is correct
-- Verify the API is accessible from your server
-- Check your internet connection
+## 🔧 Troubleshooting
 
-### "Failed to send Discord webhook"
-- Verify your `DISCORD_WEBHOOK_URL` is correct
-- Make sure the webhook hasn't been deleted from Discord
-- Check that the bot has permissions to post in the channel
+### ⚠️ Configuration Issues
+**"Configuration error: API_URL is not set"**
+- ✅ Create `.env` file from `.env.example`
+- ✅ Fill in all required environment variables
+- ✅ Check for typos in variable names
 
-### Cron job not running
-- Verify cron service is running: `systemctl status cron`
-- Check cron logs: `grep CRON /var/log/syslog`
-- Use absolute paths in your cron command
-- Make sure the script has execute permissions: `chmod +x main.py`
+**"Invalid JSON response from API"**
+- ✅ Verify your `API_URL` is correct and accessible
+- ✅ Check TopGames server status
+- ✅ Test API in browser: should return valid JSON
 
-## Development
+### 🌐 Network Issues  
+**"Failed to fetch data from API"**
+- ✅ Check internet connection
+- ✅ Verify firewall/antivirus isn't blocking requests
+- ✅ Test API endpoint manually
 
-### Module Overview
+**"Failed to send Discord webhook"**
+- ✅ Verify webhook URL is correct and active
+- ✅ Check Discord server permissions
+- ✅ Ensure webhook wasn't deleted from Discord
 
-- **config.py**: Manages environment variables and configuration validation
-- **api_client.py**: Handles HTTP requests to the TopGames API
-- **ranking.py**: Validates player data and sorts by vote count
-- **webhook.py**: Creates Discord embeds and sends them via webhook
-- **main.py**: Orchestrates the entire workflow
+### 🤖 Automation Issues
+**Windows Task Scheduler not running**
+- ✅ Check Task Scheduler service is running
+- ✅ Verify task is enabled and scheduled
+- ✅ Check task history for error details
+- ✅ Ensure Python virtual environment path is correct
 
-### Adding Features
+**Snapshots not saving**
+- ✅ Check write permissions in bot directory
+- ✅ Verify `snapshots/` directory exists
+- ✅ Check disk space availability
 
-The modular design makes it easy to extend:
-- Add new data sources by creating additional API clients
-- Customize embed formatting in `webhook.py`
-- Add data transformation logic in `ranking.py`
-- Extend configuration options in `config.py`
+### 📊 Data Issues
+**Name consolidation not working**
+- ✅ Check logs for consolidation messages
+- ✅ Verify player names contain `~` character
+- ✅ Run `test_consolidation.py` to verify functionality
 
-## License
+**Weekly analysis shows no data**
+- ✅ Ensure previous Sunday's snapshot exists
+- ✅ Check if it's the first week (no baseline data)
+- ✅ Verify snapshot files aren't corrupted
+
+### 🔍 Debugging Commands
+```bash
+# Test name consolidation
+python test_consolidation.py
+
+# Test scheduling logic
+python test_scheduling.py
+
+# Test month-end highlighting
+python test_highlight.py
+
+# Manual run with full logging
+python main.py
+```
+
+## 🛠️ Development & Customization
+
+### 🏗️ Architecture Overview
+
+The bot uses a **modular, extensible architecture**:
+
+| Module | Purpose | Key Features |
+|--------|---------|--------------|
+| **`main.py`** | Orchestration & workflow | Scheduling logic, error handling |
+| **`config.py`** | Environment management | Validation, defaults, type conversion |
+| **`api_client.py`** | TopGames API integration | HTTP requests, timeout handling |
+| **`ranking.py`** | Data processing | **Name consolidation**, sorting, validation |
+| **`webhook.py`** | Discord integration | **Multi-format embeds**, color coding |
+| **`schedule_manager.py`** | **Smart scheduling** | Date logic, post type determination |
+| **`snapshot_manager.py`** | **Weekly tracking** | Data persistence, diff calculations |
+
+### 🎨 Customization Options
+
+#### **Embed Appearance**
+```python
+# webhook.py - Modify embed colors
+COLORS = {
+    'daily': 3447003,      # Blue
+    'weekly': 7506394,     # Purple  
+    'monthly': 16766720    # Gold
+}
+
+# Customize emojis
+DAILY_MEDALS = {1: "🥇", 2: "🥈", 3: "🥉"}
+WEEKLY_MEDALS = {1: "🔥", 2: "⚡", 3: "🌟"}
+```
+
+#### **Scheduling Logic**
+```python
+# schedule_manager.py - Modify post timing
+def custom_schedule():
+    # Add custom logic for special events
+    # Holiday schedules, tournament periods, etc.
+```
+
+#### **Name Processing**
+```python  
+# ranking.py - Extend consolidation rules
+def custom_normalize_name(self, name):
+    # Handle other naming patterns
+    # Remove prefixes, normalize unicode, etc.
+```
+
+### 🔌 Extension Points
+
+**Add new post types:**
+1. Create new embed templates in `webhook.py`
+2. Add logic to `schedule_manager.py`
+3. Update main workflow in `main.py`
+
+**Add data sources:**
+1. Create new client in `api_client.py`
+2. Add processing logic in `ranking.py`
+3. Configure in `config.py`
+
+**Add notifications:**
+1. Extend webhook system for multiple channels
+2. Add email, SMS, or other notification methods
+3. Create conditional notification rules
+
+## 🚀 Quick Start Summary
+
+1. **📥 Install Dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **⚙️ Configure Environment:**
+   ```bash
+   # Copy and edit .env file
+   cp .env.example .env
+   # Add your API_URL and DISCORD_WEBHOOK_URL
+   ```
+
+3. **🧪 Test Everything:**
+   ```bash
+   python test_consolidation.py  # Test name merging
+   python test_scheduling.py     # Test date logic  
+   python test_highlight.py      # Test month-end highlighting
+   python main.py               # Full test run
+   ```
+
+4. **⏰ Setup Automation:**
+   - Use Windows Task Scheduler for daily 23:55 execution
+   - Or setup cron job on Linux/Unix systems
+
+5. **📊 Monitor Results:**
+   - Check Discord channel for posts
+   - Review logs for consolidation activities
+   - Monitor `snapshots/` directory for weekly data
+
+## 🎯 What You Get
+
+✅ **Daily Rankings** with intelligent name consolidation  
+✅ **Weekly Analysis** showing most active voters  
+✅ **Month-End Highlights** with gold special formatting  
+✅ **Multi-Device Support** via automatic name merging  
+✅ **German Localization** with month names  
+✅ **Professional Logging** and error handling  
+✅ **Automated Snapshots** and data cleanup  
+
+## 📄 License
 
 This project is licensed under the terms specified in the LICENSE file.
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Areas for enhancement:
+- Additional language localizations
+- More embed formatting options  
+- Integration with other gaming platforms
+- Advanced analytics and statistics
 
-## Support
+## 💬 Support
 
-If you encounter any issues or have questions, please open an issue on GitHub.
+- **Issues**: Open a GitHub issue for bugs or feature requests
+- **Documentation**: Check `ENHANCED_FEATURES.md` for detailed feature info
+- **Testing**: Use provided test scripts to verify functionality
+
+---
+
+**🎮 Built for TopGames Communities | 🤖 Powered by Discord Webhooks | 🐍 Made with Python**

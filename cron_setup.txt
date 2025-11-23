@@ -1,0 +1,23 @@
+# TopGames TopVoter Discord Webhook - Cron Configuration
+# Run daily at 23:55 (11:55 PM)
+
+# For Linux/Unix systems:
+# Edit crontab with: crontab -e
+# Add this line:
+55 23 * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# For Windows Task Scheduler:
+# 1. Open Task Scheduler
+# 2. Create Basic Task
+# 3. Name: "TopGames TopVoter Bot"
+# 4. Trigger: Daily at 23:55
+# 5. Action: Start a program
+#    - Program: D:/Git/TopGames-TopVoter-ToDiscordWebhook/.venv/Scripts/python.exe
+#    - Arguments: main.py
+#    - Start in: D:/Git/TopGames-TopVoter-ToDiscordWebhook/
+
+# Alternative Windows PowerShell Task (run as Administrator):
+# $action = New-ScheduledTaskAction -Execute "D:/Git/TopGames-TopVoter-ToDiscordWebhook/.venv/Scripts/python.exe" -Argument "main.py" -WorkingDirectory "D:/Git/TopGames-TopVoter-ToDiscordWebhook"
+# $trigger = New-ScheduledTaskTrigger -Daily -At "23:55"
+# $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+# Register-ScheduledTask -TaskName "TopGames TopVoter Bot" -Action $action -Trigger $trigger -Settings $settings -Description "Daily TopGames voter rankings with weekly analysis"

@@ -172,3 +172,91 @@ class DiscordWebhook:
             embed = self.create_embed(title, description, color, players)
 
         return self.send_embed(embed)
+
+    def send_weekly_analysis(
+        self,
+        weekly_players: List[Dict[str, Any]],
+        week_range: str,
+        color: int = 7506394  # Purple color for weekly posts
+    ) -> bool:
+        """
+        Create and send weekly voting analysis to Discord.
+
+        Args:
+            weekly_players: List of players with weekly vote data
+            week_range: Date range string (e.g., "17.11 - 23.11.2025")
+            color: Embed color for weekly posts
+
+        Returns:
+            bool: True if successful
+        """
+        if not weekly_players:
+            embed = {
+                "title": "📊 Wöchentliche Voting-Analyse",
+                "description": f"**Woche: {week_range}**\n\nKeine Aktivitäten in dieser Woche gefunden.",
+                "color": color,
+                "timestamp": datetime.utcnow().isoformat(),
+                "footer": {
+                    "text": "TopGames Weekly Analysis"
+                }
+            }
+        else:
+            # Create weekly analysis embed
+            names_list = []
+            votes_list = []
+            
+            for player in weekly_players[:10]:  # Limit to top 10
+                rank = player.get('rank', '?')
+                name = player.get('playername', 'Unknown')
+                weekly_votes = player.get('weekly_votes', 0)
+                
+                # Use different emojis for weekly rankings
+                rank_display = self._get_weekly_rank_display(rank)
+                names_list.append(f"{rank_display} {name}")
+                votes_list.append(f"**+{weekly_votes}** Votes")
+
+            fields = []
+            if names_list:
+                fields.append({
+                    "name": "🏃‍♂️ Aktivste Voter",
+                    "value": "\n".join(names_list),
+                    "inline": True
+                })
+                fields.append({
+                    "name": "📈 Wöchentliche Votes",
+                    "value": "\n".join(votes_list),
+                    "inline": True
+                })
+
+            embed = {
+                "title": "📊 Wöchentliche Voting-Analyse",
+                "description": f"**Woche: {week_range}**\n\nHier sind die aktivsten Voter dieser Woche!",
+                "color": color,
+                "fields": fields,
+                "timestamp": datetime.utcnow().isoformat(),
+                "footer": {
+                    "text": "TopGames Weekly Analysis"
+                }
+            }
+
+        return self.send_embed(embed)
+
+    @staticmethod
+    def _get_weekly_rank_display(rank: int) -> str:
+        """
+        Get display string for weekly rankings with different emojis.
+
+        Args:
+            rank: Player rank
+
+        Returns:
+            str: Formatted rank string
+        """
+        weekly_medals = {
+            1: "🔥",  # Fire for most active
+            2: "⚡",  # Lightning for second
+            3: "🌟"   # Star for third
+        }
+        if rank in weekly_medals:
+            return weekly_medals[rank]
+        return f"#{rank}"
