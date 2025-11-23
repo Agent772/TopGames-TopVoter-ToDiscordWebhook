@@ -40,8 +40,13 @@ class DiscordWebhook:
         Returns:
             dict: Discord embed structure
         """
-        # Build the fields for each player
+        # Build the fields for each player in 2-column layout
         fields = []
+        
+        # Create names column
+        names_list = []
+        votes_list = []
+        
         for player in players:
             rank = player.get('rank', '?')
             name = player.get('playername', 'Unknown')
@@ -49,15 +54,33 @@ class DiscordWebhook:
 
             # Create medal emoji for top 3
             rank_display = self._get_rank_display(rank)
+            
+            names_list.append(f"{rank_display} {name}")
+            votes_list.append(f"**{votes}** votes")
 
+        # Add the two columns as fields
+        if names_list:
             fields.append({
-                "name": f"{rank_display} {name}",
-                "value": f"**{votes}** votes",
+                "name": "Rank & Player",
+                "value": "\n".join(names_list),
+                "inline": True
+            })
+            fields.append({
+                "name": "Votes",
+                "value": "\n".join(votes_list),
                 "inline": True
             })
 
+        # Add current month in German to title
+        german_months = {
+            1: "Januar", 2: "Februar", 3: "März", 4: "April", 5: "Mai", 6: "Juni",
+            7: "Juli", 8: "August", 9: "September", 10: "Oktober", 11: "November", 12: "Dezember"
+        }
+        current_month = german_months[datetime.now().month]
+        title_with_month = f"{title}: {current_month}"
+
         embed = {
-            "title": title,
+            "title": title_with_month,
             "description": description,
             "color": color,
             "fields": fields,
