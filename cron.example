@@ -1,0 +1,50 @@
+# TopGames TopVoter Discord Webhook - Cron Examples
+# 
+# To use these examples:
+# 1. Edit your crontab: crontab -e
+# 2. Copy one of the examples below
+# 3. Replace /path/to/TopGames-TopVoter-ToDiscordWebhook with your actual path
+# 4. Adjust the schedule to your needs
+#
+# Cron Format:
+# * * * * * command
+# │ │ │ │ │
+# │ │ │ │ └─── Day of week (0-7, Sunday = 0 or 7)
+# │ │ │ └───── Month (1-12)
+# │ │ └─────── Day of month (1-31)
+# │ └───────── Hour (0-23)
+# └─────────── Minute (0-59)
+
+# Run every hour at the start of the hour
+0 * * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# Run every 30 minutes
+*/30 * * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# Run every 6 hours (00:00, 06:00, 12:00, 18:00)
+0 */6 * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# Run daily at 9:00 AM
+0 9 * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# Run twice daily at 8:00 AM and 8:00 PM
+0 8,20 * * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# Run every Monday at 10:00 AM
+0 10 * * 1 cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# Run at the start of every month at midnight
+0 0 1 * * cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# Run every weekday at 9:00 AM (Monday-Friday)
+0 9 * * 1-5 cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# Run every 15 minutes during business hours (9 AM - 5 PM, Mon-Fri)
+*/15 9-17 * * 1-5 cd /path/to/TopGames-TopVoter-ToDiscordWebhook && /usr/bin/python3 main.py >> /var/log/topvoters.log 2>&1
+
+# Notes:
+# - Replace /usr/bin/python3 with the output of: which python3
+# - The >> /var/log/topvoters.log 2>&1 part redirects both stdout and stderr to a log file
+# - You can create the log file first: sudo touch /var/log/topvoters.log && sudo chmod 666 /var/log/topvoters.log
+# - Or use a different log location in your home directory: ~/topvoters.log
+# - To view logs in real-time: tail -f /var/log/topvoters.log
